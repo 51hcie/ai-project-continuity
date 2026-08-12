@@ -4,18 +4,20 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-12
+
 ### Added
 
-- Safe initializer and executable test suite.
-- Complete sample project demonstrating a recoverable handoff.
-- Protocol, workflow, roadmap, governance, security, and community documentation.
-- GitHub issue and pull request templates.
+- Installable `apc` command with `init`, `check`, `report`, and `version` subcommands.
+- Non-privileged prefix installer that refuses to overwrite unrelated commands.
+- Privacy-safe Markdown conformance reports.
+- Evidence-based adoption registry, issue form, and clean-room trial report.
+- Ubuntu and macOS CI coverage for the installed workflow.
 
 ### Changed
 
-- Clarified the project as an agent-neutral continuity and handoff protocol.
-- Expanded validation for placeholders, sensitive filenames, secret-shaped content, and absolute home paths.
-- Made all documented shell commands portable even when executable bits are not preserved.
+- Quickstart now uses the installed command while retaining a source-checkout fallback.
+- Initializer follow-up guidance now points to the installed validation command.
 
 ## [0.1.0] - 2026-08-12
 
@@ -23,5 +25,6 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 - Initial continuity template using `AGENTS.md`, `.ai/`, `.env.example`, and `.gitignore`.
 
-[Unreleased]: https://github.com/51hcie/ai-project-continuity/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/51hcie/ai-project-continuity/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/51hcie/ai-project-continuity/releases/tag/v0.1.0
