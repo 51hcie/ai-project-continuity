@@ -11,9 +11,9 @@ Thank you for improving `ai-project-continuity`. Contributions should keep the p
 5. Run:
 
    ```sh
-   ./scripts/test.sh
-   ./scripts/check.sh template
-   ./scripts/check.sh examples/sample-project
+   sh scripts/test.sh
+   sh scripts/check.sh template
+   sh scripts/check.sh examples/sample-project
    ```
 
 ## Design expectations

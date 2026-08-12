@@ -15,6 +15,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 - Clarified the project as an agent-neutral continuity and handoff protocol.
 - Expanded validation for placeholders, sensitive filenames, secret-shaped content, and absolute home paths.
+- Made all documented shell commands portable even when executable bits are not preserved.
 
 ## [0.1.0] - 2026-08-12
 

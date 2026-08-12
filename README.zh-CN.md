@@ -30,8 +30,8 @@ your-project/
 在本仓库中运行：
 
 ```sh
-./scripts/init.sh ../my-project
-./scripts/check.sh ../my-project
+sh scripts/init.sh ../my-project
+sh scripts/check.sh ../my-project
 ```
 
 初始化脚本只创建缺少的文件，绝不会覆盖现有文件。随后按顺序填写：
@@ -44,8 +44,8 @@ your-project/
 运行完整示例和自测：
 
 ```sh
-./scripts/check.sh examples/sample-project
-./scripts/test.sh
+sh scripts/check.sh examples/sample-project
+sh scripts/test.sh
 ```
 
 ## 核心原则

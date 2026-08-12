@@ -34,7 +34,7 @@ Everything is plain Markdown and standard shell. There is no hosted service, acc
 From this repository:
 
 ```sh
-./scripts/init.sh ../my-project
+sh scripts/init.sh ../my-project
 ```
 
 The initializer creates only missing files and refuses to overwrite existing ones. Review the new placeholders, then tailor them to the project.
@@ -51,7 +51,7 @@ Fill in these files in order:
 ### 3. Validate before committing
 
 ```sh
-./scripts/check.sh ../my-project
+sh scripts/check.sh ../my-project
 ```
 
 Expected output:
@@ -65,8 +65,8 @@ The validator checks required files, placeholder completion, ignore rules, track
 ### Try the complete example
 
 ```sh
-./scripts/check.sh examples/sample-project
-./scripts/test.sh
+sh scripts/check.sh examples/sample-project
+sh scripts/test.sh
 ```
 
 Then read [`examples/sample-project/AGENTS.md`](examples/sample-project/AGENTS.md) followed by its `.ai/` files. The example shows the exact state a new human or coding agent receives after a clean clone.
