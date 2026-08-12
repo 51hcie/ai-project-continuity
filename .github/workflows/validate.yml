@@ -1,0 +1,22 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  continuity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate shell syntax
+        run: sh -n scripts/check.sh scripts/init.sh scripts/test.sh
+      - name: Run test suite
+        run: ./scripts/test.sh
+      - name: Validate distributions
+        run: |
+          ./scripts/check.sh template
+          ./scripts/check.sh examples/sample-project
