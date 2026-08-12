@@ -1,0 +1,32 @@
+name: Protocol proposal
+description: Propose a continuity format or workflow change grounded in a real handoff
+title: "proposal: "
+labels: [proposal]
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Handoff scenario
+      description: Describe the cross-machine, cross-session, human, or coding-agent handoff that is not adequately supported.
+    validations:
+      required: true
+  - type: textarea
+    id: gap
+    attributes:
+      label: Current gap
+      description: Explain why the current protocol is insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Minimal proposal
+      description: Include compatibility, privacy, and migration implications.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: true
