@@ -11,12 +11,12 @@ jobs:
   continuity:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Validate shell syntax
         run: sh -n scripts/check.sh scripts/init.sh scripts/test.sh
       - name: Run test suite
-        run: ./scripts/test.sh
+        run: sh scripts/test.sh
       - name: Validate distributions
         run: |
-          ./scripts/check.sh template
-          ./scripts/check.sh examples/sample-project
+          sh scripts/check.sh template
+          sh scripts/check.sh examples/sample-project
