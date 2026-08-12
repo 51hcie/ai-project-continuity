@@ -2,7 +2,7 @@
 
 ## Create continuity once
 
-Run `./scripts/init.sh PATH`, then replace the placeholders with repository facts. Treat this as project documentation, not a transcript export.
+Run `sh scripts/init.sh PATH`, then replace the placeholders with repository facts. Treat this as project documentation, not a transcript export.
 
 ## Resume on any machine or agent
 

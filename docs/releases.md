@@ -1,6 +1,6 @@
 # Release process
 
-1. Confirm the default branch passes `./scripts/test.sh` and both example validations.
+1. Confirm the default branch passes `sh scripts/test.sh` and both example validations.
 2. Move relevant entries from `Unreleased` into a dated semantic version in `CHANGELOG.md`.
 3. Review protocol compatibility and migration notes.
 4. Create an annotated Git tag and a GitHub release using the changelog entry.
