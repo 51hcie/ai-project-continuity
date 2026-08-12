@@ -9,14 +9,20 @@ permissions:
 
 jobs:
   continuity:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
       - name: Validate shell syntax
-        run: sh -n scripts/check.sh scripts/init.sh scripts/test.sh
+        run: sh -n apc scripts/check.sh scripts/init.sh scripts/install.sh scripts/test.sh
       - name: Run test suite
         run: sh scripts/test.sh
       - name: Validate distributions
         run: |
-          sh scripts/check.sh template
-          sh scripts/check.sh examples/sample-project
+          sh ./apc check template
+          sh ./apc check examples/sample-project

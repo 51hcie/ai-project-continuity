@@ -1,0 +1,54 @@
+name: Adoption report
+description: Share verifiable use in a real project
+title: "[Adoption]: "
+labels:
+  - adoption
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for trying the protocol. Never paste credentials, private paths, customer data, or private project content.
+  - type: input
+    id: repository
+    attributes:
+      label: Public repository or evidence URL
+      description: Public evidence is required before a project is listed in ADOPTERS.md.
+      placeholder: https://github.com/owner/project
+    validations:
+      required: true
+  - type: input
+    id: duration
+    attributes:
+      label: Duration of use
+      placeholder: Three weeks / two releases / five handoffs
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Handoff scenario
+      description: Which machines, people, sessions, or coding agents were involved?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted validation evidence
+      description: Include the apc check or apc report result, with private details removed.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome and feedback
+      description: What became easier, and what should change?
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed secrets, private paths, customer data, and private conversation content.
+          required: true

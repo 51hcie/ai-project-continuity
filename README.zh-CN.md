@@ -6,7 +6,7 @@ Git 保存代码；本项目补齐继续开发所需的上下文：项目目标�
 
 > 克隆、恢复、阅读交接，然后用验证结果继续推进。
 
-[English](README.md) · [协议](docs/protocol.md) · [交接流程](docs/handoff-workflow.md) · [完整示例](examples/sample-project)
+[English](README.md) · [协议](docs/protocol.md) · [交接流程](docs/handoff-workflow.md) · [完整示例](examples/sample-project) · [采用情况](ADOPTERS.md)
 
 ## 为什么需要它
 
@@ -27,11 +27,19 @@ your-project/
 
 ## 快速开始
 
-在本仓库中运行：
+首先从本仓库安装命令，无需包管理器或管理员权限：
 
 ```sh
-sh scripts/init.sh ../my-project
-sh scripts/check.sh ../my-project
+sh scripts/install.sh "$HOME/.local"
+export PATH="$HOME/.local/bin:$PATH"
+apc version
+```
+
+然后在任意目录运行：
+
+```sh
+apc init ../my-project
+apc check ../my-project
 ```
 
 初始化脚本只创建缺少的文件，绝不会覆盖现有文件。随后按顺序填写：
@@ -44,7 +52,8 @@ sh scripts/check.sh ../my-project
 运行完整示例和自测：
 
 ```sh
-sh scripts/check.sh examples/sample-project
+apc check examples/sample-project
+apc report examples/sample-project
 sh scripts/test.sh
 ```
 
@@ -57,7 +66,7 @@ sh scripts/test.sh
 - 隐私优先：不保存密钥、个人数据、绝对个人路径、完整聊天或本地日志；
 - 可恢复：一次全新克隆后能够确定并验证下一个动作。
 
-更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。项目当前为 `v0.1`，欢迎用真实仓库验证并反馈，参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。工具当前为 `v0.2`，不会在缺少公开证据时声称外部采用。欢迎用真实仓库验证并通过 Adoption report 反馈，参见 [ADOPTERS.md](ADOPTERS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 许可证
 

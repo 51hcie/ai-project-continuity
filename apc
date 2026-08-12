@@ -1,0 +1,116 @@
+#!/bin/sh
+
+set -eu
+
+version=0.2.0
+
+usage() {
+  cat <<'EOF'
+Usage: apc COMMAND [TARGET]
+
+Commands:
+  init TARGET       Add missing continuity files to a project
+  check [TARGET]    Validate a project (default: current directory)
+  report [TARGET]   Print a privacy-safe Markdown conformance report
+  version           Print the installed version
+  help              Show this help
+EOF
+}
+
+resolve_root() {
+  if [ -n "${APC_HOME:-}" ] && [ -d "$APC_HOME/scripts" ] && [ -d "$APC_HOME/template" ]; then
+    printf '%s\n' "$APC_HOME"
+    return
+  fi
+
+  script=$0
+  case $script in
+    */*) ;;
+    *)
+      if [ -f "$script" ]; then
+        script=./$script
+      else
+        script=$(command -v "$script" 2>/dev/null || printf '%s' "$script")
+      fi
+      ;;
+  esac
+  bin_dir=$(CDPATH= cd -- "$(dirname -- "$script")" && pwd)
+
+  if [ -d "$bin_dir/scripts" ] && [ -d "$bin_dir/template" ]; then
+    printf '%s\n' "$bin_dir"
+  elif [ -d "$bin_dir/../share/ai-project-continuity/scripts" ] && [ -d "$bin_dir/../share/ai-project-continuity/template" ]; then
+    CDPATH= cd -- "$bin_dir/../share/ai-project-continuity" && pwd
+  else
+    printf 'error: cannot locate the ai-project-continuity bundle\n' >&2
+    printf 'hint: reinstall with scripts/install.sh or set APC_HOME\n' >&2
+    exit 2
+  fi
+}
+
+root=$(resolve_root)
+command_name=${1:-help}
+if [ "$#" -gt 0 ]; then
+  shift
+fi
+
+case $command_name in
+  init)
+    if [ "$#" -ne 1 ]; then
+      printf 'error: init requires exactly one target directory\n' >&2
+      usage >&2
+      exit 2
+    fi
+    exec sh "$root/scripts/init.sh" "$1"
+    ;;
+  check)
+    if [ "$#" -gt 1 ]; then
+      printf 'error: check accepts at most one target directory\n' >&2
+      usage >&2
+      exit 2
+    fi
+    exec sh "$root/scripts/check.sh" "${1:-.}"
+    ;;
+  report)
+    if [ "$#" -gt 1 ]; then
+      printf 'error: report accepts at most one target directory\n' >&2
+      usage >&2
+      exit 2
+    fi
+    target=${1:-.}
+    if ! sh "$root/scripts/check.sh" "$target" >/dev/null; then
+      printf 'error: cannot report conformance because validation failed\n' >&2
+      exit 1
+    fi
+    target_dir=$(CDPATH= cd -- "$target" && pwd)
+    project_name=$(basename "$target_dir")
+    revision=not-versioned
+    if git -C "$target_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      revision=$(git -C "$target_dir" rev-parse --short HEAD 2>/dev/null || printf 'uncommitted')
+    fi
+    generated=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+    cat <<EOF
+# AI project continuity conformance report
+
+- Project: $project_name
+- Status: pass
+- Validator: ai-project-continuity $version
+- Revision: $revision
+- Generated (UTC): $generated
+- Required continuity files: present
+- Placeholder scan: pass
+- Privacy and secret-shaped content scan: pass
+- Tracked sensitive filename scan: pass
+EOF
+    ;;
+  version|--version|-V)
+    printf 'ai-project-continuity %s\n' "$version"
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  *)
+    printf 'error: unknown command: %s\n' "$command_name" >&2
+    usage >&2
+    exit 2
+    ;;
+esac

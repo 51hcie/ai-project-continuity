@@ -6,7 +6,7 @@ Git preserves code. This project preserves the context required to continue: pro
 
 > Clone. Restore. Read the handoff. Continue with evidence.
 
-[简体中文](README.zh-CN.md) · [Protocol](docs/protocol.md) · [Handoff workflow](docs/handoff-workflow.md) · [Example](examples/sample-project)
+[简体中文](README.zh-CN.md) · [Protocol](docs/protocol.md) · [Handoff workflow](docs/handoff-workflow.md) · [Example](examples/sample-project) · [Adoption](ADOPTERS.md)
 
 ## Why this exists
 
@@ -29,17 +29,27 @@ Everything is plain Markdown and standard shell. There is no hosted service, acc
 
 ## Quickstart
 
-### 1. Add continuity files to a project
+### 1. Install the command
 
-From this repository:
+From a clone of this repository:
 
 ```sh
-sh scripts/init.sh ../my-project
+sh scripts/install.sh "$HOME/.local"
+export PATH="$HOME/.local/bin:$PATH"
+apc version
+```
+
+No package manager or elevated privileges are required. You can also skip installation and replace `apc` below with `sh ./apc` from this repository.
+
+### 2. Add continuity files to a project
+
+```sh
+apc init ../my-project
 ```
 
 The initializer creates only missing files and refuses to overwrite existing ones. Review the new placeholders, then tailor them to the project.
 
-### 2. Create the handoff
+### 3. Create the handoff
 
 Fill in these files in order:
 
@@ -48,10 +58,10 @@ Fill in these files in order:
 3. `.ai/tasks.md` — what is happening now, what is blocked, and the next executable step.
 4. `AGENTS.md` — repository-specific working agreements and validation requirements.
 
-### 3. Validate before committing
+### 4. Validate before committing
 
 ```sh
-sh scripts/check.sh ../my-project
+apc check ../my-project
 ```
 
 Expected output:
@@ -65,7 +75,8 @@ The validator checks required files, placeholder completion, ignore rules, track
 ### Try the complete example
 
 ```sh
-sh scripts/check.sh examples/sample-project
+apc check examples/sample-project
+apc report examples/sample-project
 sh scripts/test.sh
 ```
 
@@ -99,7 +110,7 @@ See the normative [protocol definition](docs/protocol.md) and practical [handoff
 
 ## Project status
 
-The protocol is intentionally small and is currently at `v0.1`. Feedback from real repositories is especially valuable. See [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+The protocol is intentionally small and the tooling is currently at `v0.2`. External adoption is not claimed without public evidence. See [ADOPTERS.md](ADOPTERS.md), [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security and privacy
 

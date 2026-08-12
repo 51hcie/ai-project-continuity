@@ -16,22 +16,17 @@ if [ ! -d "$target" ]; then
   exit 2
 fi
 
-created=0
-skipped=0
-
 find "$source_dir" -type f | while IFS= read -r source; do
   relative=${source#"$source_dir"/}
   destination=$target/$relative
   if [ -e "$destination" ]; then
     printf 'skip:   %s already exists\n' "$relative"
-    skipped=$((skipped + 1))
     continue
   fi
   mkdir -p "$(dirname -- "$destination")"
   cp "$source" "$destination"
   printf 'create: %s\n' "$relative"
-  created=$((created + 1))
 done
 
 printf 'continuity files initialized in %s\n' "$target"
-printf 'next: replace placeholders, then run %s/check.sh %s\n' "$script_dir" "$target"
+printf 'next: replace placeholders, then run: apc check %s\n' "$target"

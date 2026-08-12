@@ -11,9 +11,10 @@ Thank you for improving `ai-project-continuity`. Contributions should keep the p
 5. Run:
 
    ```sh
+   sh -n apc scripts/*.sh
    sh scripts/test.sh
-   sh scripts/check.sh template
-   sh scripts/check.sh examples/sample-project
+   sh ./apc check template
+   sh ./apc check examples/sample-project
    ```
 
 ## Design expectations
@@ -31,5 +32,7 @@ Use the pull request template. Describe the problem, protocol impact, security/p
 ## Community
 
 Participation is governed by [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Report security-sensitive findings according to [SECURITY.md](SECURITY.md).
+
+Real-world use can be shared through the **Adoption report** issue form. Public listings require verifiable evidence; AI-run trials and maintainer-owned fixtures are documented separately and never counted as independent external adoption.
 
 By contributing, you agree that your contribution is licensed under the MIT License.
