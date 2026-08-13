@@ -1,4 +1,4 @@
-# Continuity protocol v0.1
+# Continuity protocol v0.3
 
 This document defines the minimum repository state needed for a recoverable project handoff. The keywords MUST, MUST NOT, SHOULD, and MAY describe requirement strength.
 
@@ -16,6 +16,14 @@ A conforming repository MUST contain:
 | `.gitignore` | Exclusion of local secrets and private continuity state | A new local artifact appears |
 
 Reusable prompts and milestone summaries SHOULD live under `.ai/prompts/` and `.ai/sessions/`. Private notes MAY live under `.ai/private/`, which MUST be ignored.
+
+## Session summary lifecycle
+
+A session summary is a recovery checkpoint, not a transcript or per-commit log. Create one when work crosses a meaningful handoff boundary, such as a completed milestone, a change of developer or coding agent, a context reset, or a blocker that will outlive the current work session.
+
+Session filenames SHOULD use `YYYY-MM-DD-short-topic.md`, with a lowercase, hyphen-separated topic. Each summary SHOULD state the goal, completed work, failed attempts when they affect the next step, current validation evidence, open questions, and the exact next entry point. The canonical fill-in structure lives in `.ai/sessions/_template.md`.
+
+Published summaries SHOULD remain historically stable. Correct inaccurate or sensitive content when necessary; make other corrections explicit or supersede an earlier summary instead of silently rewriting project history.
 
 ## Recovery invariant
 

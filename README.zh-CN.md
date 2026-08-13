@@ -12,6 +12,10 @@ Git 保存代码；本项目补齐继续开发所需的上下文：项目目标�
 
 项目换电脑、换会话或换 AI 编程助手后，聊天记录往往不完整，本地笔记也不会跟随代码。仅看代码无法得知某项设计为何存在、已经试过什么以及下一步做什么。`ai-project-continuity` 用一组可版本管理的纯文本文件保存这些信息：
 
+> **没有交接协议：** 全新克隆只能看到代码，无法得知某模块为什么停用、哪些方案已经失败，以及哪条验证命令最后一次通过。
+>
+> **使用本协议：** 下一位开发者或 coding agent 先读取仓库内的交接状态，找到受约束的下一项可执行任务，再在修改代码前验证已记录的基线。
+
 ```text
 your-project/
 ├── AGENTS.md              # 与具体 agent 无关的协作规则和阅读顺序
@@ -35,6 +39,15 @@ export PATH="$HOME/.local/bin:$PATH"
 apc version
 ```
 
+如果只想初始化现有项目而不克隆本仓库，可先检查 [`scripts/bootstrap.sh`](scripts/bootstrap.sh)，再运行：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/51hcie/ai-project-continuity/main/scripts/bootstrap.sh \
+  | sh -s -- init ../my-project
+```
+
+该方式需要 `curl` 和 `tar`；脚本会下载临时源码包、仅创建缺失文件，然后清理临时文件。
+
 然后在任意目录运行：
 
 ```sh
@@ -43,6 +56,8 @@ apc check ../my-project
 ```
 
 初始化脚本只创建缺少的文件，绝不会覆盖现有文件。随后按顺序填写：
+
+填写前建议先查看[完整示例项目](examples/sample-project)，了解每类信息合适的详细程度。
 
 1. `.ai/context.md`：项目目标、边界、技术和运行方式；
 2. `.ai/decisions.md`：以后不应重新讨论或猜测的决策；
@@ -66,7 +81,7 @@ sh scripts/test.sh
 - 隐私优先：不保存密钥、个人数据、绝对个人路径、完整聊天或本地日志；
 - 可恢复：一次全新克隆后能够确定并验证下一个动作。
 
-更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。工具当前为 `v0.2`，不会在缺少公开证据时声称外部采用。欢迎用真实仓库验证并通过 Adoption report 反馈，参见 [ADOPTERS.md](ADOPTERS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
+更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。工具当前为 `v0.3`，不会在缺少公开证据时声称外部采用。欢迎用真实仓库验证并通过 Adoption report 反馈，参见 [ADOPTERS.md](ADOPTERS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 许可证
 

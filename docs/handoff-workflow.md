@@ -26,6 +26,20 @@ Update state when a task completes, changes direction, or becomes blocked. A use
 
 Add a session summary only for a meaningful milestone. Keep it short and link to commits, issues, or decision records instead of copying discussions.
 
+## Update cadence
+
+Continuity files are checkpoints, not a per-commit activity log. Update them when repository state changes what the next contributor needs to know:
+
+| Event | Required action |
+| --- | --- |
+| A task completes or changes direction | Update `.ai/tasks.md` with the outcome, evidence, and next entry point. |
+| A blocker stops progress | Update `.ai/tasks.md` before stopping; include the cause and unblock condition. |
+| A durable architecture or interface decision is accepted | Append a record to `.ai/decisions.md`. |
+| A durable goal, boundary, constraint, or run command changes | Update `.ai/context.md`. |
+| Work moves to another machine, agent, or developer at a meaningful milestone | Update the files above, add a `.ai/sessions/` summary when it adds recovery value, then run `apc check`. |
+
+An autonomous agent SHOULD checkpoint after completing a bounded task and before a risky change, context reset, or expected interruption. It SHOULD NOT rewrite continuity files after every commit when the recoverable state has not changed.
+
 ## Moving between coding agents
 
 Keep vendor-specific convenience files as optional adapters. `AGENTS.md` and `.ai/` remain the neutral source of truth. If an agent requires a special instruction file, make it point back to the canonical continuity artifacts instead of maintaining divergent state.

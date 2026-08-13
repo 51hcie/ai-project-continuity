@@ -13,6 +13,12 @@
 - Validate the installed workflow on Ubuntu and macOS.
 - Add a transparent, evidence-based adoption reporting process.
 
+## v0.3 — community feedback
+
+- Add no-clone initialization through a temporary, non-destructive bootstrap.
+- Define explicit continuity update cadence and session-summary lifecycle guidance.
+- Add inline examples that show the intended level of detail in templates.
+
 ## Next
 
 - Gather feedback from repositories using the protocol.

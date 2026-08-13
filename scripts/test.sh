@@ -27,9 +27,43 @@ done
 sh "$script_dir/check.sh" "$root/template" >/dev/null
 sh "$script_dir/check.sh" "$root/examples/sample-project" >/dev/null
 
+cp -R "$root/examples/sample-project" "$tmp/session-template-project"
+cp "$root/template/.ai/sessions/README.md" "$tmp/session-template-project/.ai/sessions/README.md"
+cp "$root/template/.ai/sessions/_template.md" "$tmp/session-template-project/.ai/sessions/_template.md"
+sh "$script_dir/check.sh" "$tmp/session-template-project" >/dev/null
+
 sh "$script_dir/install.sh" "$tmp/prefix" >/dev/null
-if [ "$("$tmp/prefix/bin/apc" version)" != 'ai-project-continuity 0.2.0' ]; then
+if [ "$("$tmp/prefix/bin/apc" version)" != 'ai-project-continuity 0.3.0' ]; then
   printf 'test failed: installed command returned the wrong version\n' >&2
+  exit 1
+fi
+
+mkdir -p "$tmp/archive/ai-project-continuity-main/scripts"
+cp "$root/apc" "$tmp/archive/ai-project-continuity-main/apc"
+cp "$root/scripts/init.sh" "$tmp/archive/ai-project-continuity-main/scripts/init.sh"
+cp "$root/scripts/check.sh" "$tmp/archive/ai-project-continuity-main/scripts/check.sh"
+cp "$root/scripts/install.sh" "$tmp/archive/ai-project-continuity-main/scripts/install.sh"
+cp -R "$root/template" "$tmp/archive/ai-project-continuity-main/template"
+tar -czf "$tmp/source.tar.gz" -C "$tmp/archive" ai-project-continuity-main
+mkdir -p "$tmp/bootstrap-project"
+printf '# Bootstrap fixture\n' > "$tmp/bootstrap-project/README.md"
+mkdir -p "$tmp/bootstrap-tmp"
+TMPDIR=$tmp/bootstrap-tmp APC_ARCHIVE_FILE=$tmp/source.tar.gz sh "$script_dir/bootstrap.sh" init "$tmp/bootstrap-project" >/dev/null
+if [ ! -f "$tmp/bootstrap-project/.ai/context.md" ]; then
+  printf 'test failed: bootstrap initializer did not create continuity files\n' >&2
+  exit 1
+fi
+if [ "$(cat "$tmp/bootstrap-project/README.md")" != '# Bootstrap fixture' ]; then
+  printf 'test failed: bootstrap initializer overwrote an existing file\n' >&2
+  exit 1
+fi
+if find "$tmp/bootstrap-tmp" -mindepth 1 -print -quit | grep -q .; then
+  printf 'test failed: bootstrap did not clean up its temporary source archive\n' >&2
+  exit 1
+fi
+TMPDIR=$tmp/bootstrap-tmp APC_ARCHIVE_FILE=$tmp/source.tar.gz sh "$script_dir/bootstrap.sh" install "$tmp/bootstrap-prefix" >/dev/null
+if [ "$("$tmp/bootstrap-prefix/bin/apc" version)" != 'ai-project-continuity 0.3.0' ]; then
+  printf 'test failed: bootstrap installer returned the wrong version\n' >&2
   exit 1
 fi
 
