@@ -1,7 +1,10 @@
 # Work state
 
+<!-- Keep this executable: name the next action, its owner or role, evidence, and the file or command where work resumes. -->
+
 ## Doing
 
+<!-- Example: Add status filtering in `internal/trails/query.go` (API maintainer; started <date>). -->
 - [ ] Highest-priority active task (owner; start date)
 
 ## Next
@@ -10,6 +13,7 @@
 
 ## Blocked
 
+<!-- Example: Pagination contract (blocked on API review; unblock when issue #123 is decided). -->
 - [ ] Blocker (cause; condition for unblocking)
 
 ## Done

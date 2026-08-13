@@ -42,7 +42,11 @@ fi
 
 docs=$(find "$target" -type f \( -name '*.md' -o -name '.env.example' \) -not -path '*/.git/*' -print)
 if [ -n "$docs" ]; then
-  placeholders=$(find "$target" -type f \( -name '*.md' -o -name '.env.example' \) -not -path '*/.git/*' -exec grep -IlE 'YYYY-MM-DD|Highest-priority active task|Describe what this project does' {} + 2>/dev/null || true)
+  placeholders=$(find "$target" -type f \( -name '*.md' -o -name '.env.example' \) \
+    -not -path '*/.git/*' \
+    -not -path '*/.ai/sessions/README.md' \
+    -not -path '*/.ai/sessions/_template.md' \
+    -exec grep -IlE 'YYYY-MM-DD|Highest-priority active task|Describe what this project does' {} + 2>/dev/null || true)
   if [ -n "$placeholders" ] && [ "$(basename "$target")" != "template" ]; then
     say_error "unfinished placeholders found:\n$placeholders"
   fi

@@ -12,6 +12,10 @@ Git preserves code. This project preserves the context required to continue: pro
 
 AI-assisted projects often lose momentum when work moves to a new machine or agent. Chat history is incomplete, local notes are missing, and the code alone cannot explain why a design exists or what has already failed. `ai-project-continuity` adds a versioned continuity layer that stays with the repository:
 
+> **Without a continuity handoff:** a fresh clone shows the code, but not why a module is disabled, which approach already failed, or what command last passed.
+>
+> **With this protocol:** the next human or coding agent reads the repository-owned handoff, finds the next executable task and its constraints, then verifies the recorded baseline before editing.
+
 ```text
 your-project/
 ├── AGENTS.md              # agent-neutral collaboration rules and reading order
@@ -41,6 +45,15 @@ apc version
 
 No package manager or elevated privileges are required. You can also skip installation and replace `apc` below with `sh ./apc` from this repository.
 
+For a no-clone initialization, inspect [`scripts/bootstrap.sh`](scripts/bootstrap.sh), then run:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/51hcie/ai-project-continuity/main/scripts/bootstrap.sh \
+  | sh -s -- init ../my-project
+```
+
+The bootstrap downloads a temporary source archive, initializes only missing files, and removes the archive. It requires `curl` and `tar`; use the clone-based flow when you need to review or pin every downloaded file before execution.
+
 ### 2. Add continuity files to a project
 
 ```sh
@@ -48,6 +61,8 @@ apc init ../my-project
 ```
 
 The initializer creates only missing files and refuses to overwrite existing ones. Review the new placeholders, then tailor them to the project.
+
+Before filling them in, review the [complete sample project](examples/sample-project) to see the intended level of detail.
 
 ### 3. Create the handoff
 
@@ -110,7 +125,7 @@ See the normative [protocol definition](docs/protocol.md) and practical [handoff
 
 ## Project status
 
-The protocol is intentionally small and the tooling is currently at `v0.2`. External adoption is not claimed without public evidence. See [ADOPTERS.md](ADOPTERS.md), [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+The protocol is intentionally small and the tooling is currently at `v0.3`. External adoption is not claimed without public evidence. See [ADOPTERS.md](ADOPTERS.md), [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security and privacy
 
