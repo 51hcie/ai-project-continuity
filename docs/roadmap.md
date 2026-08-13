@@ -19,6 +19,13 @@
 - Define explicit continuity update cadence and session-summary lifecycle guidance.
 - Add inline examples that show the intended level of detail in templates.
 
+## v0.4 — context delivery and branch semantics
+
+- Add deterministic, privacy-guarded context bundles for manual handoff.
+- Add a pinned composite GitHub Action and optional staleness warning.
+- Define branch merge semantics, active decision indexing, and discoverable prompt metadata.
+- Provide a reviewable pre-commit hook without mutating existing hooks.
+
 ## Next
 
 - Gather feedback from repositories using the protocol.

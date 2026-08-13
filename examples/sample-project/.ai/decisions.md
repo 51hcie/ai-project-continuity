@@ -1,5 +1,13 @@
 # Decision log
 
+## Active decision index
+
+- ADR-001 — Use the Python standard library for the first milestone (`accepted`)
+
+ADR-002 remains proposed and therefore is not an active constraint.
+
+## Decision records
+
 ## ADR-001: Start with the Python standard library
 
 - Date: 2026-08-12

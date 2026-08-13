@@ -3,8 +3,10 @@
 Before changing the project, read these files in order:
 
 1. `.ai/context.md`
-2. `.ai/decisions.md`
+2. The active decision index at the top of `.ai/decisions.md`, then any records relevant to the task
 3. `.ai/tasks.md`
+
+Reusable, reviewed prompts are indexed in `.ai/prompts/README.md`. Use them only when their stated inputs and expected output match the task.
 
 Working agreements:
 

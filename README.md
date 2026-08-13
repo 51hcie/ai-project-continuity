@@ -87,6 +87,36 @@ continuity check passed: ../my-project
 
 The validator checks required files, placeholder completion, ignore rules, tracked sensitive filenames, absolute home paths, and common secret-shaped content. It is a guardrail, not a replacement for a dedicated secret scanner.
 
+To get a heuristic warning when task state may be stale:
+
+```sh
+apc check --staleness 20 ../my-project
+```
+
+The warning is non-blocking and only applies inside a Git repository.
+
+### 5. Create a reviewable context bundle
+
+```sh
+apc bundle ../my-project > handoff.md
+```
+
+`bundle` first requires the project to pass `apc check`, then writes `AGENTS.md`, `.ai/context.md`, `.ai/decisions.md`, and `.ai/tasks.md` in deterministic order. It never copies environment files, prompts, session notes, or private files. Automated checks cannot recognize every sensitive fact, so read `handoff.md` before pasting it into a web LLM or sharing it with another person.
+
+### GitHub Actions
+
+Pin a released version in your workflow:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: 51hcie/ai-project-continuity@v0.4.0
+    with:
+      target: .
+```
+
+The composite action runs the same repository-owned validator. For optional local commit-time checks, `apc hook` prints a reviewable hook script but intentionally does not change `.git/hooks/`.
+
 ### Try the complete example
 
 ```sh
@@ -101,7 +131,7 @@ Then read [`examples/sample-project/AGENTS.md`](examples/sample-project/AGENTS.m
 
 At the start:
 
-1. Read `AGENTS.md`, then `.ai/context.md`, `.ai/decisions.md`, and `.ai/tasks.md`.
+1. Read `AGENTS.md`, then `.ai/context.md`, the active decision index and relevant records in `.ai/decisions.md`, and `.ai/tasks.md`.
 2. Confirm the next task, relevant constraints, and validation command.
 3. Inspect the code before making changes.
 
@@ -125,7 +155,7 @@ See the normative [protocol definition](docs/protocol.md) and practical [handoff
 
 ## Project status
 
-The protocol is intentionally small and the tooling is currently at `v0.3`. External adoption is not claimed without public evidence. See [ADOPTERS.md](ADOPTERS.md), [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+The protocol is intentionally small and the tooling is currently at `v0.4`. External adoption is not claimed without public evidence. See [ADOPTERS.md](ADOPTERS.md), [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security and privacy
 

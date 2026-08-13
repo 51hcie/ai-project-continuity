@@ -72,6 +72,34 @@ apc report examples/sample-project
 sh scripts/test.sh
 ```
 
+如需在任务状态长期未更新时收到启发式提示，可运行：
+
+```sh
+apc check --staleness 20 ../my-project
+```
+
+该提示不会导致检查失败，并且只在 Git 仓库内生效。
+
+如需把核心交接上下文粘贴到网页 LLM 或交给其他人：
+
+```sh
+apc bundle ../my-project > handoff.md
+```
+
+`bundle` 会先要求项目通过 `apc check`，再按固定顺序输出 `AGENTS.md`、`.ai/context.md`、`.ai/decisions.md` 和 `.ai/tasks.md`；它不会包含环境文件、prompts、session notes 或私有文件。自动检查无法识别所有敏感事实，分享前仍须人工阅读 `handoff.md`。
+
+GitHub Actions 可固定使用已发布版本：
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: 51hcie/ai-project-continuity@v0.4.0
+    with:
+      target: .
+```
+
+本地提交前检查可用 `apc hook` 生成一段可审查的 hook 脚本；该命令不会擅自修改 `.git/hooks/`，以免覆盖项目已有流程。
+
 ## 核心原则
 
 - 与仓库同行：上下文和代码一起克隆、评审、演进；
@@ -81,7 +109,7 @@ sh scripts/test.sh
 - 隐私优先：不保存密钥、个人数据、绝对个人路径、完整聊天或本地日志；
 - 可恢复：一次全新克隆后能够确定并验证下一个动作。
 
-更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。工具当前为 `v0.3`，不会在缺少公开证据时声称外部采用。欢迎用真实仓库验证并通过 Adoption report 反馈，参见 [ADOPTERS.md](ADOPTERS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
+更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。工具当前为 `v0.4`，不会在缺少公开证据时声称外部采用。欢迎用真实仓库验证并通过 Adoption report 反馈，参见 [ADOPTERS.md](ADOPTERS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 许可证
 

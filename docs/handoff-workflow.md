@@ -43,3 +43,24 @@ An autonomous agent SHOULD checkpoint after completing a bounded task and before
 ## Moving between coding agents
 
 Keep vendor-specific convenience files as optional adapters. `AGENTS.md` and `.ai/` remain the neutral source of truth. If an agent requires a special instruction file, make it point back to the canonical continuity artifacts instead of maintaining divergent state.
+
+## Work across branches
+
+A branch's continuity files describe the recoverable state of that branch. A feature branch may record its own next task and evidence while the target branch continues to represent the integrated project state.
+
+Before opening or updating a pull request:
+
+1. Keep only durable feature facts in `.ai/context.md` and `.ai/decisions.md`.
+2. Update `.ai/tasks.md` with the feature result, validation evidence, and remaining merge-dependent work.
+3. Include a session summary only when it adds recovery value beyond the commits and pull request.
+4. Re-run `apc check` after bringing the branch up to date.
+
+When continuity files conflict, do not resolve them with a blanket “ours” or “theirs.” Start from the target branch's current integrated state, incorporate the feature's verified outcome and still-relevant next steps, retain accepted decisions that remain active, and preserve superseded records as history.
+
+After merge, the target branch should record the actual integrated result. Remove feature-only next steps that are complete, keep unresolved work explicit, and record validation from the merged state rather than copying a pre-merge claim.
+
+## Optional automation
+
+Use `apc check --staleness 20` to emit a non-blocking warning when `.ai/tasks.md` has not changed in more than 20 commits. This is a review prompt, not proof that the handoff is wrong; repositories vary in commit size and update cadence. The warning is skipped outside a Git repository.
+
+`apc hook` prints a small pre-commit hook to standard output. It never writes under `.git/hooks/`, because silently replacing or appending to an existing hook can break a project's workflow. Review the output and compose it with the repository's existing hook manager or hook only when local policy calls for commit-time validation.

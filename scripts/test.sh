@@ -33,7 +33,7 @@ cp "$root/template/.ai/sessions/_template.md" "$tmp/session-template-project/.ai
 sh "$script_dir/check.sh" "$tmp/session-template-project" >/dev/null
 
 sh "$script_dir/install.sh" "$tmp/prefix" >/dev/null
-if [ "$("$tmp/prefix/bin/apc" version)" != 'ai-project-continuity 0.3.0' ]; then
+if [ "$("$tmp/prefix/bin/apc" version)" != 'ai-project-continuity 0.4.0' ]; then
   printf 'test failed: installed command returned the wrong version\n' >&2
   exit 1
 fi
@@ -62,7 +62,7 @@ if find "$tmp/bootstrap-tmp" -mindepth 1 -print -quit | grep -q .; then
   exit 1
 fi
 TMPDIR=$tmp/bootstrap-tmp APC_ARCHIVE_FILE=$tmp/source.tar.gz sh "$script_dir/bootstrap.sh" install "$tmp/bootstrap-prefix" >/dev/null
-if [ "$("$tmp/bootstrap-prefix/bin/apc" version)" != 'ai-project-continuity 0.3.0' ]; then
+if [ "$("$tmp/bootstrap-prefix/bin/apc" version)" != 'ai-project-continuity 0.4.0' ]; then
   printf 'test failed: bootstrap installer returned the wrong version\n' >&2
   exit 1
 fi
@@ -90,6 +90,64 @@ if grep -Eq '(/Users/[^/[:space:]]+|/home/[^/[:space:]]+)' "$tmp/report.md"; the
   exit 1
 fi
 
+"$tmp/prefix/bin/apc" bundle "$root/examples/sample-project" > "$tmp/bundle.md" 2> "$tmp/bundle-warning.txt"
+for path in AGENTS.md .ai/context.md .ai/decisions.md .ai/tasks.md; do
+  if ! grep -Fq "## \`$path\`" "$tmp/bundle.md"; then
+    printf 'test failed: context bundle omitted %s\n' "$path" >&2
+    exit 1
+  fi
+done
+if ! grep -q '^warning: automated checks cannot detect every private detail' "$tmp/bundle-warning.txt"; then
+  printf 'test failed: context bundle omitted the manual privacy warning\n' >&2
+  exit 1
+fi
+if grep -q 'Review constraints' "$tmp/bundle.md" || grep -q 'APP_MODE=' "$tmp/bundle.md"; then
+  printf 'test failed: context bundle included a prompt or environment contract\n' >&2
+  exit 1
+fi
+
+mkdir -p "$tmp/hook-repo/.git/hooks"
+printf 'existing hook content\n' > "$tmp/hook-repo/.git/hooks/pre-commit"
+(CDPATH= cd -- "$tmp/hook-repo" && "$tmp/prefix/bin/apc" hook > "$tmp/generated-hook")
+sh -n "$tmp/generated-hook"
+if [ "$(cat "$tmp/hook-repo/.git/hooks/pre-commit")" != 'existing hook content' ]; then
+  printf 'test failed: hook generator changed an existing hook\n' >&2
+  exit 1
+fi
+if ! grep -Fq 'exec apc check "$repo_root"' "$tmp/generated-hook"; then
+  printf 'test failed: generated hook did not run the continuity check\n' >&2
+  exit 1
+fi
+
+cp -R "$root/examples/sample-project" "$tmp/stale-project"
+git -C "$tmp/stale-project" init -q
+git -C "$tmp/stale-project" config user.name 'APC tests'
+git -C "$tmp/stale-project" config user.email 'apc-tests@example.invalid'
+git -C "$tmp/stale-project" add .
+git -C "$tmp/stale-project" commit -qm 'Record continuity baseline'
+git -C "$tmp/stale-project" commit -qm 'First code-only change' --allow-empty
+git -C "$tmp/stale-project" commit -qm 'Second code-only change' --allow-empty
+"$tmp/prefix/bin/apc" check --staleness 1 "$tmp/stale-project" > "$tmp/stale-output.txt" 2> "$tmp/stale-warning.txt"
+if ! grep -q 'warning: .ai/tasks.md has not changed in 2 commits' "$tmp/stale-warning.txt"; then
+  printf 'test failed: stale task state did not emit the expected warning\n' >&2
+  exit 1
+fi
+if ! grep -q '^continuity check passed:' "$tmp/stale-output.txt"; then
+  printf 'test failed: a staleness warning incorrectly failed validation\n' >&2
+  exit 1
+fi
+if "$tmp/prefix/bin/apc" check --staleness 0 "$tmp/stale-project" >/dev/null 2>&1; then
+  printf 'test failed: staleness check accepted a zero threshold\n' >&2
+  exit 1
+fi
+
+if ! grep -q '^  using: composite$' "$root/action.yml" || \
+   ! grep -Fq 'APC_TARGET: ${{ inputs.target }}' "$root/action.yml" || \
+   ! grep -Fq 'sh "$GITHUB_ACTION_PATH/scripts/check.sh" "$APC_TARGET"' "$root/action.yml"; then
+  printf 'test failed: composite action is not wired to the repository validator\n' >&2
+  exit 1
+fi
+
 if sh "$script_dir/install.sh" / >/dev/null 2>&1; then
   printf 'test failed: installer accepted the filesystem root\n' >&2
   exit 1
@@ -106,6 +164,10 @@ cp -R "$root/examples/sample-project/." "$tmp/unsafe"
 printf '%s\n' 'API_TOKEN=sk-abcdefghijklmnopqrstuvwxyz123456' >> "$tmp/unsafe/.ai/context.md"
 if sh "$script_dir/check.sh" "$tmp/unsafe" >/dev/null 2>&1; then
   printf 'test failed: validator accepted secret-shaped content\n' >&2
+  exit 1
+fi
+if "$tmp/prefix/bin/apc" bundle "$tmp/unsafe" >/dev/null 2>&1; then
+  printf 'test failed: context bundle accepted secret-shaped content\n' >&2
   exit 1
 fi
 

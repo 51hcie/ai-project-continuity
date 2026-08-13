@@ -1,6 +1,6 @@
 # Project collaboration guide
 
-Read `.ai/context.md`, `.ai/decisions.md`, and `.ai/tasks.md` before editing.
+Read `.ai/context.md`, the active decision index and relevant records in `.ai/decisions.md`, and `.ai/tasks.md` before editing. Reviewed reusable prompts are indexed in `.ai/prompts/README.md`.
 
 - Keep the first version dependency-free and in-memory.
 - Do not add authentication until ADR-002 is resolved.
