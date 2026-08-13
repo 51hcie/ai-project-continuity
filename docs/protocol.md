@@ -1,4 +1,4 @@
-# Continuity protocol v0.3
+# Continuity protocol v0.4
 
 This document defines the minimum repository state needed for a recoverable project handoff. The keywords MUST, MUST NOT, SHOULD, and MAY describe requirement strength.
 
@@ -16,6 +16,12 @@ A conforming repository MUST contain:
 | `.gitignore` | Exclusion of local secrets and private continuity state | A new local artifact appears |
 
 Reusable prompts and milestone summaries SHOULD live under `.ai/prompts/` and `.ai/sessions/`. Private notes MAY live under `.ai/private/`, which MUST be ignored.
+
+## Reusable prompt lifecycle
+
+Reusable prompts are reviewed project assets, not saved conversations. Prompt filenames SHOULD use a lowercase `verb-noun.md` form. `.ai/prompts/README.md` SHOULD index each prompt by its intended situation, required inputs, and expected output so contributors can discover it without scanning every file.
+
+Each prompt SHOULD state when to use it, its inputs, agent-neutral instructions, expected output, and relevant safety boundaries. It SHOULD link to canonical continuity facts instead of copying task state that will become stale.
 
 ## Session summary lifecycle
 
@@ -44,6 +50,12 @@ They SHOULD contain dates, owners or roles where useful, exact validation comman
 ## Decision record lifecycle
 
 Every durable decision SHOULD include status, context, decision, rationale, consequences, alternatives, and supersession information. Accepted records remain in history; later decisions supersede rather than silently rewrite them.
+
+`.ai/decisions.md` SHOULD begin with an active decision index containing only accepted records that still constrain current work. Proposed and superseded records remain in the full history but MUST NOT be presented as active constraints.
+
+## Branch and merge semantics
+
+Continuity state is branch-local: it describes what a contributor can recover from that branch. Before merging, a feature branch SHOULD update continuity only for durable facts introduced by the feature. During conflict resolution, contributors MUST reconcile task and decision meaning against the target branch instead of choosing one side mechanically. After merge, the target branch SHOULD identify the integrated state, remaining work, and current validation evidence.
 
 ## Compatibility
 

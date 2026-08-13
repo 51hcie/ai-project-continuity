@@ -4,6 +4,7 @@ set -eu
 
 target=${1:-.}
 failed=0
+staleness_threshold=${APC_STALENESS_THRESHOLD:-}
 
 say_error() {
   printf 'error: %b\n' "$1" >&2
@@ -46,6 +47,7 @@ if [ -n "$docs" ]; then
     -not -path '*/.git/*' \
     -not -path '*/.ai/sessions/README.md' \
     -not -path '*/.ai/sessions/_template.md' \
+    -not -path '*/.ai/prompts/_template.md' \
     -exec grep -IlE 'YYYY-MM-DD|Highest-priority active task|Describe what this project does' {} + 2>/dev/null || true)
   if [ -n "$placeholders" ] && [ "$(basename "$target")" != "template" ]; then
     say_error "unfinished placeholders found:\n$placeholders"
@@ -75,6 +77,26 @@ fi
 
 if [ "$failed" -ne 0 ]; then
   exit 1
+fi
+
+if [ -n "$staleness_threshold" ]; then
+  case $staleness_threshold in
+    *[!0-9]*|0)
+      printf 'error: APC_STALENESS_THRESHOLD must be a positive integer\n' >&2
+      exit 2
+      ;;
+  esac
+
+  if git -C "$target" rev-parse --verify HEAD >/dev/null 2>&1; then
+    tasks_revision=$(git -C "$target" log -1 --format=%H -- .ai/tasks.md 2>/dev/null || true)
+    if [ -n "$tasks_revision" ]; then
+      commits_since_tasks=$(git -C "$target" rev-list --count "$tasks_revision..HEAD")
+      if [ "$commits_since_tasks" -gt "$staleness_threshold" ]; then
+        printf 'warning: .ai/tasks.md has not changed in %s commits (threshold: %s); review whether the handoff is stale\n' \
+          "$commits_since_tasks" "$staleness_threshold" >&2
+      fi
+    fi
+  fi
 fi
 
 printf 'continuity check passed: %s\n' "$target"

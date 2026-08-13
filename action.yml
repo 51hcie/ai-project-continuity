@@ -1,0 +1,22 @@
+name: AI project continuity check
+description: Validate the repository-owned handoff with the versioned APC validator.
+author: ai-project-continuity contributors
+
+inputs:
+  target:
+    description: Repository-relative project directory to validate.
+    required: false
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - name: Validate continuity handoff
+      shell: sh
+      env:
+        APC_TARGET: ${{ inputs.target }}
+      run: sh "$GITHUB_ACTION_PATH/scripts/check.sh" "$APC_TARGET"
+
+branding:
+  icon: repeat
+  color: blue

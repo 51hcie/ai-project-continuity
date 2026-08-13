@@ -4,6 +4,21 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-13
+
+### Added
+
+- Deterministic `apc bundle` output for manually handing core context to people or web LLMs.
+- Optional non-blocking `apc check --staleness COMMITS` warnings.
+- Root composite `action.yml` for pinned GitHub Actions validation.
+- Reviewable `apc hook` output that never modifies an existing Git hook.
+- Prompt naming, metadata, index, template, and complete sample prompt.
+
+### Changed
+
+- Decision logs now expose currently active constraints separately from historical records.
+- Protocol and workflow guidance now define branch-local continuity and semantic merge resolution.
+
 ## [0.3.0] - 2026-08-13
 
 ### Added
@@ -39,7 +54,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 - Initial continuity template using `AGENTS.md`, `.ai/`, `.env.example`, and `.gitignore`.
 
-[Unreleased]: https://github.com/51hcie/ai-project-continuity/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/51hcie/ai-project-continuity/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/51hcie/ai-project-continuity/releases/tag/v0.1.0
