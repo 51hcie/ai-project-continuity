@@ -63,6 +63,17 @@ Every durable decision SHOULD include status, context, decision, rationale, cons
 
 Continuity state is branch-local: it describes what a contributor can recover from that branch. Before merging, a feature branch SHOULD update continuity only for durable facts introduced by the feature. During conflict resolution, contributors MUST reconcile task and decision meaning against the target branch instead of choosing one side mechanically. After merge, the target branch SHOULD identify the integrated state, remaining work, and current validation evidence.
 
+## Concurrent task updates
+
+When multiple humans or coding agents share one branch, `.ai/tasks.md` is a coordination document, not a lock. Prefer separate branches whenever the work can be isolated. If a shared branch is unavoidable:
+
+1. Add an entry to the optional `## Active claims` table before editing a task. Include the owner or role, start date, and file or area scope.
+2. Record the current file identity before editing, for example with `git hash-object .ai/tasks.md`.
+3. Re-check that identity immediately before writing. If it changed, stop, re-read the file, and merge the other contributor's state instead of overwriting it.
+4. Remove or mark the claim released when the task is complete. Treat stale claims as coordination hints that require confirmation, not as proof that a person is still working.
+
+This convention prevents the common last-writer-wins mistake when agents update the same task file, but it cannot replace version control or resolve two semantic updates automatically.
+
 ## Compatibility
 
 The canonical format is UTF-8 Markdown plus conventional repository files. Consumers MUST NOT require a particular hosted service or coding agent to interpret the core protocol.
