@@ -8,6 +8,8 @@ Before changing the project, read these files in order:
 
 Reusable, reviewed prompts are indexed in `.ai/prompts/README.md`. Use them only when their stated inputs and expected output match the task.
 
+Before requesting a non-public resource, read `.ai/resources.md` for a safe locator and check the current environment or credential helper. Never copy resource values into continuity files; ask the user again when the locator is unavailable.
+
 Working agreements:
 
 - Preserve the current architecture and user changes unless the task requires otherwise.

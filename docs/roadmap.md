@@ -26,6 +26,11 @@
 - Define branch merge semantics, active decision indexing, and discoverable prompt metadata.
 - Provide a reviewable pre-commit hook without mutating existing hooks.
 
+## v0.5 — safe resource recovery
+
+- Define locator-only metadata for re-obtaining non-public inputs after a handoff.
+- Keep resource metadata opt-in for bundles and prohibit secret or transcript recovery from Git.
+
 ## Next
 
 - Gather feedback from repositories using the protocol.

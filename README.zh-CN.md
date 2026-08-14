@@ -24,6 +24,7 @@ your-project/
 │   ├── decisions.md       # 长期有效的架构决策
 │   ├── tasks.md           # 当前任务、阻塞项、验证证据和下一入口
 │   ├── prompts/           # 可复用的项目提示词，不保存私人对话
+│   ├── resources.md      # 可选的非公开资源安全定位，不保存资源值
 │   └── sessions/          # 简短里程碑交接
 ├── .env.example           # 安全的配置契约
 └── .gitignore             # 本地状态和密钥只留在本地
@@ -86,14 +87,14 @@ apc check --staleness 20 ../my-project
 apc bundle ../my-project > handoff.md
 ```
 
-`bundle` 会先要求项目通过 `apc check`，再按固定顺序输出 `AGENTS.md`、`.ai/context.md`、`.ai/decisions.md` 和 `.ai/tasks.md`；它不会包含环境文件、prompts、session notes 或私有文件。自动检查无法识别所有敏感事实，分享前仍须人工阅读 `handoff.md`。
+`bundle` 会先要求项目通过 `apc check`，再按固定顺序输出 `AGENTS.md`、`.ai/context.md`、`.ai/decisions.md` 和 `.ai/tasks.md`；默认不会包含环境文件、prompts、session notes、resources 或私有文件。只有确认安全定位信息适合分享时才加 `--resources`。自动检查无法识别所有敏感事实，分享前仍须人工阅读 `handoff.md`。
 
 GitHub Actions 可固定使用已发布版本：
 
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: 51hcie/ai-project-continuity@v0.4.0
+  - uses: 51hcie/ai-project-continuity@v0.5.0
     with:
       target: .
 ```
@@ -109,7 +110,7 @@ steps:
 - 隐私优先：不保存密钥、个人数据、绝对个人路径、完整聊天或本地日志；
 - 可恢复：一次全新克隆后能够确定并验证下一个动作。
 
-更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。工具当前为 `v0.4`，不会在缺少公开证据时声称外部采用。欢迎用真实仓库验证并通过 Adoption report 反馈，参见 [ADOPTERS.md](ADOPTERS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
+更多细节见[协议定义](docs/protocol.md)和[交接流程](docs/handoff-workflow.md)。工具当前为 `v0.5`，不会在缺少公开证据时声称外部采用。欢迎用真实仓库验证并通过 Adoption report 反馈，参见 [ADOPTERS.md](ADOPTERS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 许可证
 

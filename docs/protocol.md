@@ -1,4 +1,4 @@
-# Continuity protocol v0.4
+# Continuity protocol v0.5
 
 This document defines the minimum repository state needed for a recoverable project handoff. The keywords MUST, MUST NOT, SHOULD, and MAY describe requirement strength.
 
@@ -15,7 +15,7 @@ A conforming repository MUST contain:
 | `.env.example` | Names and safe placeholders for required configuration | Configuration contract changes |
 | `.gitignore` | Exclusion of local secrets and private continuity state | A new local artifact appears |
 
-Reusable prompts and milestone summaries SHOULD live under `.ai/prompts/` and `.ai/sessions/`. Private notes MAY live under `.ai/private/`, which MUST be ignored.
+Reusable prompts and milestone summaries SHOULD live under `.ai/prompts/` and `.ai/sessions/`. Safe resource locators MAY live in `.ai/resources.md`; private notes MAY live under `.ai/private/`, which MUST be ignored.
 
 ## Reusable prompt lifecycle
 
@@ -46,6 +46,12 @@ After a fresh clone, a contributor following `AGENTS.md` MUST be able to:
 Continuity files MUST NOT contain credentials, access tokens, private keys, personal data, customer data, raw private chats, local logs, or absolute personal home paths. Use synthetic examples and relative paths.
 
 They SHOULD contain dates, owners or roles where useful, exact validation commands, concise results, explicit blockers, and links to repository artifacts. They SHOULD NOT duplicate code documentation or become activity journals.
+
+## Resource availability
+
+Projects MAY keep a `.ai/resources.md` inventory of how to obtain non-public inputs after a handoff. It MUST contain only safe locators such as environment-variable names, credential-helper commands, logical secret-manager references, or repository-relative locations. It MUST NOT contain token values, passwords, private keys, customer data, host addresses, absolute paths, or raw conversation content.
+
+Before asking the user for a resource, an agent SHOULD read this inventory and check the current environment or credential helper. A locator is not proof that access exists. If it is unavailable, the agent MUST ask the user to provide the resource again at action time; it MUST NOT guess, reconstruct, or copy a secret into the repository.
 
 ## Decision record lifecycle
 

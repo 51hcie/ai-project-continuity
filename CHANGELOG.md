@@ -4,6 +4,18 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-14
+
+### Added
+
+- Optional `.ai/resources.md` safe-locator convention for recovering non-public inputs without storing their values.
+- `apc bundle --resources` opt-in output for reviewing safe resource metadata.
+
+### Changed
+
+- Agent and handoff guidance now requires checking safe locators before asking for unavailable resources and forbids reconstructing or copying secrets.
+- README and examples document resource metadata boundaries and the v0.5 Action pin.
+
 ## [0.4.0] - 2026-08-13
 
 ### Added
@@ -54,7 +66,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 - Initial continuity template using `AGENTS.md`, `.ai/`, `.env.example`, and `.gitignore`.
 
-[Unreleased]: https://github.com/51hcie/ai-project-continuity/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/51hcie/ai-project-continuity/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/51hcie/ai-project-continuity/compare/v0.1.0...v0.2.0

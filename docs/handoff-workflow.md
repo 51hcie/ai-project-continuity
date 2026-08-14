@@ -64,3 +64,9 @@ After merge, the target branch should record the actual integrated result. Remov
 Use `apc check --staleness 20` to emit a non-blocking warning when `.ai/tasks.md` has not changed in more than 20 commits. This is a review prompt, not proof that the handoff is wrong; repositories vary in commit size and update cadence. The warning is skipped outside a Git repository.
 
 `apc hook` prints a small pre-commit hook to standard output. It never writes under `.git/hooks/`, because silently replacing or appending to an existing hook can break a project's workflow. Review the output and compose it with the repository's existing hook manager or hook only when local policy calls for commit-time validation.
+
+## Recover non-public resources safely
+
+If a project needs credentials or machine-specific inputs, keep only a locator in `.ai/resources.md`: for example an environment-variable name, a credential-helper command, a logical secret-manager reference, or a repository-relative configuration path. Keep the value, host address, absolute path, and private data outside Git.
+
+At resume time, read the locator, check the current environment or credential helper, and ask the user only if the resource is still unavailable. A handoff should reduce repeated explanation without turning the repository into a secret store. `apc bundle` excludes the resource inventory by default; use `apc bundle --resources` only when the safe metadata itself is appropriate to share, and review it before sending.

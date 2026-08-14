@@ -17,7 +17,7 @@ if [ "$(cat "$tmp/project/README.md")" != '# Existing project' ]; then
   exit 1
 fi
 
-for path in AGENTS.md .ai/context.md .ai/decisions.md .ai/tasks.md .env.example; do
+for path in AGENTS.md .ai/context.md .ai/decisions.md .ai/tasks.md .ai/resources.md .env.example; do
   if [ ! -f "$tmp/project/$path" ]; then
     printf 'test failed: initializer did not create %s\n' "$path" >&2
     exit 1
@@ -33,7 +33,7 @@ cp "$root/template/.ai/sessions/_template.md" "$tmp/session-template-project/.ai
 sh "$script_dir/check.sh" "$tmp/session-template-project" >/dev/null
 
 sh "$script_dir/install.sh" "$tmp/prefix" >/dev/null
-if [ "$("$tmp/prefix/bin/apc" version)" != 'ai-project-continuity 0.4.0' ]; then
+if [ "$("$tmp/prefix/bin/apc" version)" != 'ai-project-continuity 0.5.0' ]; then
   printf 'test failed: installed command returned the wrong version\n' >&2
   exit 1
 fi
@@ -62,7 +62,7 @@ if find "$tmp/bootstrap-tmp" -mindepth 1 -print -quit | grep -q .; then
   exit 1
 fi
 TMPDIR=$tmp/bootstrap-tmp APC_ARCHIVE_FILE=$tmp/source.tar.gz sh "$script_dir/bootstrap.sh" install "$tmp/bootstrap-prefix" >/dev/null
-if [ "$("$tmp/bootstrap-prefix/bin/apc" version)" != 'ai-project-continuity 0.4.0' ]; then
+if [ "$("$tmp/bootstrap-prefix/bin/apc" version)" != 'ai-project-continuity 0.5.0' ]; then
   printf 'test failed: bootstrap installer returned the wrong version\n' >&2
   exit 1
 fi
@@ -103,6 +103,16 @@ if ! grep -q '^warning: automated checks cannot detect every private detail' "$t
 fi
 if grep -q 'Review constraints' "$tmp/bundle.md" || grep -q 'APP_MODE=' "$tmp/bundle.md"; then
   printf 'test failed: context bundle included a prompt or environment contract\n' >&2
+  exit 1
+fi
+if grep -q 'Resource availability' "$tmp/bundle.md"; then
+  printf 'test failed: default context bundle included resource metadata\n' >&2
+  exit 1
+fi
+"$tmp/prefix/bin/apc" bundle --resources "$root/examples/sample-project" > "$tmp/resource-bundle.md" 2> "$tmp/resource-warning.txt"
+if ! grep -q 'resources.md' "$tmp/resource-bundle.md" || \
+   ! grep -q 'resource locators may reveal internal names' "$tmp/resource-warning.txt"; then
+  printf 'test failed: opt-in resource bundle did not include its warning and section\n' >&2
   exit 1
 fi
 
@@ -168,6 +178,12 @@ if sh "$script_dir/check.sh" "$tmp/unsafe" >/dev/null 2>&1; then
 fi
 if "$tmp/prefix/bin/apc" bundle "$tmp/unsafe" >/dev/null 2>&1; then
   printf 'test failed: context bundle accepted secret-shaped content\n' >&2
+  exit 1
+fi
+cp -R "$root/examples/sample-project/." "$tmp/unsafe-resource"
+printf '%s\n' 'GITHUB_TOKEN=ghp_abcdefghijklmnopqrstuvwxyz1234567890' >> "$tmp/unsafe-resource/.ai/resources.md"
+if sh "$script_dir/check.sh" "$tmp/unsafe-resource" >/dev/null 2>&1; then
+  printf 'test failed: validator accepted secret-shaped resource metadata\n' >&2
   exit 1
 fi
 
