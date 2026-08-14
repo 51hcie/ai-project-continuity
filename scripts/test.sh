@@ -115,6 +115,25 @@ if ! grep -q 'resources.md' "$tmp/resource-bundle.md" || \
   printf 'test failed: opt-in resource bundle did not include its warning and section\n' >&2
   exit 1
 fi
+"$tmp/prefix/bin/apc" bundle --minimal "$root/examples/sample-project" > "$tmp/minimal-bundle.md" 2> "$tmp/minimal-warning.txt"
+for marker in '## Durable constraints' '## Current task' '## Next entry point' '## Latest session'; do
+  if ! grep -Fq "$marker" "$tmp/minimal-bundle.md"; then
+    printf 'test failed: minimal context bundle omitted %s\n' "$marker" >&2
+    exit 1
+  fi
+done
+if grep -q '## Decision records' "$tmp/minimal-bundle.md" || \
+   grep -q 'Review constraints' "$tmp/minimal-bundle.md" || \
+   grep -q 'Resource availability' "$tmp/minimal-bundle.md"; then
+  printf 'test failed: minimal context bundle included history, prompts, or resources\n' >&2
+  exit 1
+fi
+"$tmp/prefix/bin/apc" bundle --minimal --resources "$root/examples/sample-project" > "$tmp/minimal-resource-bundle.md" 2> "$tmp/minimal-resource-warning.txt"
+if ! grep -q 'resources.md' "$tmp/minimal-resource-bundle.md" || \
+   ! grep -q 'resource locators may reveal internal names' "$tmp/minimal-resource-warning.txt"; then
+  printf 'test failed: minimal resource bundle did not include its opt-in warning and section\n' >&2
+  exit 1
+fi
 
 mkdir -p "$tmp/hook-repo/.git/hooks"
 printf 'existing hook content\n' > "$tmp/hook-repo/.git/hooks/pre-commit"
@@ -126,6 +145,16 @@ if [ "$(cat "$tmp/hook-repo/.git/hooks/pre-commit")" != 'existing hook content' 
 fi
 if ! grep -Fq 'exec apc check "$repo_root"' "$tmp/generated-hook"; then
   printf 'test failed: generated hook did not run the continuity check\n' >&2
+  exit 1
+fi
+"$tmp/prefix/bin/apc" hook --shell powershell > "$tmp/generated-hook.ps1"
+if ! grep -Fq 'Get-Command' "$tmp/generated-hook.ps1" || \
+   ! grep -Fq 'PATH used by Git' "$tmp/generated-hook.ps1"; then
+  printf 'test failed: PowerShell hook did not include PATH-aware command discovery\n' >&2
+  exit 1
+fi
+if "$tmp/prefix/bin/apc" hook --shell fish >/dev/null 2>&1; then
+  printf 'test failed: hook generator accepted an unsupported shell\n' >&2
   exit 1
 fi
 
@@ -151,10 +180,41 @@ if "$tmp/prefix/bin/apc" check --staleness 0 "$tmp/stale-project" >/dev/null 2>&
   exit 1
 fi
 
+mkdir -p "$tmp/time-stale"
+cp -R "$root/examples/sample-project/." "$tmp/time-stale/"
+git -C "$tmp/time-stale" init -q
+git -C "$tmp/time-stale" config user.name 'APC tests'
+git -C "$tmp/time-stale" config user.email 'apc-tests@example.invalid'
+git -C "$tmp/time-stale" add .
+GIT_AUTHOR_DATE='2020-01-01T00:00:00Z' GIT_COMMITTER_DATE='2020-01-01T00:00:00Z' \
+  git -C "$tmp/time-stale" commit -qm 'Record an old continuity baseline'
+if ! "$tmp/prefix/bin/apc" check --staleness 3d "$tmp/time-stale" > "$tmp/time-stale-output.txt" 2> "$tmp/time-stale-warning.txt"; then
+  printf 'test failed: time-based staleness check failed validation\n' >&2
+  exit 1
+fi
+if ! grep -q 'has not changed in days (threshold: 3d)' "$tmp/time-stale-warning.txt"; then
+  printf 'test failed: time-based staleness check did not warn\n' >&2
+  exit 1
+fi
+if "$tmp/prefix/bin/apc" check --staleness 0d "$tmp/time-stale" >/dev/null 2>&1; then
+  printf 'test failed: time-based staleness check accepted a zero threshold\n' >&2
+  exit 1
+fi
+if "$tmp/prefix/bin/apc" check --staleness 2x "$tmp/time-stale" >/dev/null 2>&1; then
+  printf 'test failed: staleness check accepted an unknown time suffix\n' >&2
+  exit 1
+fi
+
 if ! grep -q '^  using: composite$' "$root/action.yml" || \
    ! grep -Fq 'APC_TARGET: ${{ inputs.target }}' "$root/action.yml" || \
    ! grep -Fq 'sh "$GITHUB_ACTION_PATH/scripts/check.sh" "$APC_TARGET"' "$root/action.yml"; then
   printf 'test failed: composite action is not wired to the repository validator\n' >&2
+  exit 1
+fi
+
+if ! grep -Fq '## Active claims' "$root/template/.ai/tasks.md" || \
+   ! grep -Fq 'No shared-branch claims are active.' "$root/examples/sample-project/.ai/tasks.md"; then
+  printf 'test failed: concurrent task claim guidance is missing from the template or example\n' >&2
   exit 1
 fi
 
