@@ -22,7 +22,7 @@ your-project/
 ├── .ai/
 │   ├── context.md         # goals, boundaries, constraints, and run commands
 │   ├── decisions.md       # durable architecture decision records
-│   ├── tasks.md           # current work, blockers, evidence, and next entry point
+│   ├── tasks.md           # current work, optional active claims, and next entry point
 │   ├── prompts/           # reusable project prompts, never private transcripts
 │   ├── resources.md       # optional safe locators for non-public inputs, never values
 │   └── sessions/          # concise milestone handoffs
@@ -92,9 +92,11 @@ To get a heuristic warning when task state may be stale:
 
 ```sh
 apc check --staleness 20 ../my-project
+apc check --staleness 3d ../my-project
+apc check --staleness 1w ../my-project
 ```
 
-The warning is non-blocking and only applies inside a Git repository.
+Numbers count commits after the last committed `.ai/tasks.md` update; a `d` or `w` suffix checks elapsed time instead. The warning is non-blocking and uses the task file's latest Git timestamp when available.
 
 ### 5. Create a reviewable context bundle
 
@@ -103,6 +105,8 @@ apc bundle ../my-project > handoff.md
 ```
 
 `bundle` first requires the project to pass `apc check`, then writes `AGENTS.md`, `.ai/context.md`, `.ai/decisions.md`, and `.ai/tasks.md` in deterministic order. It never copies environment files, prompts, session notes, resources, or private files by default. Add `--resources` only when safe locator metadata is appropriate to share. Automated checks cannot recognize every sensitive fact, so read `handoff.md` before pasting it into a web LLM or sharing it with another person.
+
+For a token-constrained handoff, use `apc bundle --minimal ../my-project`. It includes durable constraints, current and next task state, blockers, handoff evidence, and the latest published session summary while leaving out decision history, prompts, and resources by default. `--resources` remains an explicit opt-in and adds a review warning.
 
 ### GitHub Actions
 
@@ -117,6 +121,8 @@ steps:
 ```
 
 The composite action runs the same repository-owned validator. For optional local commit-time checks, `apc hook` prints a reviewable hook script but intentionally does not change `.git/hooks/`.
+
+On Windows, Git for Windows can use the default `sh` hook when `apc` is on Git's PATH. Native PowerShell users can generate `apc hook --shell powershell` and invoke the resulting `.ps1` file from the repository's normal `pre-commit` shim. The generated hook checks for `apc`, `apc.ps1`, `apc.cmd`, or `apc.exe` and fails with a PATH instruction if it cannot find one.
 
 ### Try the complete example
 
