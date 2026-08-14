@@ -10,12 +10,13 @@ Usage: apc COMMAND [OPTIONS] [TARGET]
 
 Commands:
   init TARGET       Add missing continuity files to a project
-  check [--staleness COMMITS] [TARGET]
+  check [--staleness COMMITS|DAYS|WEEKS] [TARGET]
                     Validate a project; optionally warn about stale task state
   report [TARGET]   Print a privacy-safe Markdown conformance report
-  bundle [--resources] [TARGET]
-                    Print core continuity context for a manual handoff
-  hook              Print a reviewable pre-commit hook without installing it
+  bundle [--minimal] [--resources] [TARGET]
+                    Print core or token-constrained continuity context
+  hook [--shell sh|powershell]
+                    Print a reviewable pre-commit hook without installing it
   version           Print the installed version
   help              Show this help
 EOF
@@ -70,20 +71,21 @@ case $command_name in
     staleness=
     if [ "${1:-}" = "--staleness" ]; then
       if [ "$#" -lt 2 ]; then
-        printf 'error: --staleness requires a positive commit count\n' >&2
+        printf 'error: --staleness requires a positive commit count, days (e.g. 3d), or weeks (e.g. 1w)\n' >&2
         exit 2
       fi
       staleness=$2
       case $staleness in
-        ''|*[!0-9]*)
-          printf 'error: --staleness requires a positive commit count\n' >&2
+        *d) staleness_number=${staleness%d} ;;
+        *w) staleness_number=${staleness%w} ;;
+        *) staleness_number=$staleness ;;
+      esac
+      case $staleness_number in
+        ''|*[!0-9]*|0)
+          printf 'error: --staleness requires a positive commit count, days (e.g. 3d), or weeks (e.g. 1w)\n' >&2
           exit 2
           ;;
       esac
-      if [ "$staleness" -eq 0 ]; then
-        printf 'error: --staleness requires a positive commit count\n' >&2
-        exit 2
-      fi
       shift 2
     fi
     if [ "$#" -gt 1 ]; then
@@ -127,21 +129,96 @@ EOF
     ;;
   bundle)
     include_resources=
-    if [ "${1:-}" = "--resources" ]; then
-      include_resources=1
+    minimal=
+    target=
+    while [ "$#" -gt 0 ]; do
+      case $1 in
+        --resources)
+          include_resources=1
+          ;;
+        --minimal)
+          minimal=1
+          ;;
+        --help|-h)
+          usage
+          exit 0
+          ;;
+        --*)
+          printf 'error: unknown bundle option: %s\n' "$1" >&2
+          usage >&2
+          exit 2
+          ;;
+        *)
+          if [ -n "$target" ]; then
+            printf 'error: bundle accepts at most one target directory\n' >&2
+            usage >&2
+            exit 2
+          fi
+          target=$1
+          ;;
+      esac
       shift
-    fi
-    if [ "$#" -gt 1 ]; then
-      printf 'error: bundle accepts at most one target directory\n' >&2
-      usage >&2
-      exit 2
-    fi
-    target=${1:-.}
+    done
+    target=${target:-.}
     if ! sh "$root/scripts/check.sh" "$target" >/dev/null; then
       printf 'error: refusing to create a bundle because validation failed\n' >&2
       exit 1
     fi
     printf 'warning: automated checks cannot detect every private detail; review the bundle before sharing it\n' >&2
+    section_body() {
+      section_file=$1
+      section_heading=$2
+      awk -v heading="$section_heading" '
+        $0 == heading { found=1; next }
+        found && /^## / { exit }
+        found { print }
+        END { if (!found) exit 1 }
+      ' "$section_file"
+    }
+    print_minimal_section() {
+      section_title=$1
+      section_file=$2
+      section_heading=$3
+      printf '## %s\n\n' "$section_title"
+      section_content=$(section_body "$section_file" "$section_heading" 2>/dev/null || true)
+      if [ -n "$section_content" ]; then
+        printf '%s\n\n' "$section_content"
+      else
+        printf '_No entries recorded for `%s`._\n\n' "$section_heading"
+      fi
+    }
+    if [ -n "$minimal" ]; then
+      printf '# APC minimal context bundle\n\n'
+      printf '> This reduced bundle is intended for token-constrained handoffs. Review it before sharing.\n\n'
+      print_minimal_section 'Durable constraints' "$target/.ai/context.md" '## Durable constraints'
+      print_minimal_section 'Current task' "$target/.ai/tasks.md" '## Doing'
+      print_minimal_section 'Next entry point' "$target/.ai/tasks.md" '## Next'
+      print_minimal_section 'Blockers' "$target/.ai/tasks.md" '## Blocked'
+      print_minimal_section 'Handoff evidence' "$target/.ai/tasks.md" '## Handoff'
+
+      latest_session=
+      if [ -d "$target/.ai/sessions" ]; then
+        latest_session=$(find "$target/.ai/sessions" -type f -name '*.md' \
+          ! -name 'README.md' ! -name '_template.md' ! -name '*.local.md' \
+          -print | sort | tail -n 1)
+      fi
+      printf '## Latest session\n\n'
+      if [ -n "$latest_session" ]; then
+        printf '_Source: `%s`_\n\n' "${latest_session#"$target"/}"
+        cat "$latest_session"
+        printf '\n\n'
+      else
+        printf '_No published session summary was found._\n\n'
+      fi
+
+      if [ -n "$include_resources" ] && [ -f "$target/.ai/resources.md" ]; then
+        printf '## `.ai/resources.md`\n\n'
+        cat "$target/.ai/resources.md"
+        printf '\n\n'
+        printf 'warning: resource locators may reveal internal names; review this section before sharing\n' >&2
+      fi
+      exit 0
+    fi
     cat <<'EOF'
 # APC context bundle
 
@@ -161,8 +238,49 @@ EOF
     fi
     ;;
   hook)
-    if [ "$#" -ne 0 ]; then
-      printf 'error: hook does not accept arguments\n' >&2
+    hook_shell=sh
+    if [ "$#" -gt 0 ]; then
+      if [ "$#" -ne 2 ] || [ "$1" != '--shell' ]; then
+        printf 'error: hook accepts only --shell sh|powershell\n' >&2
+        usage >&2
+        exit 2
+      fi
+      hook_shell=$2
+    fi
+    case $hook_shell in
+      sh|posix)
+        ;;
+      powershell|pwsh)
+        cat <<'EOF'
+$ErrorActionPreference = 'Stop'
+
+$repoRoot = (& git rev-parse --show-toplevel 2>$null | Select-Object -First 1).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($repoRoot)) {
+  Write-Error 'error: the PowerShell hook must run inside a Git repository'
+  exit 1
+}
+
+$apc = @('apc', 'apc.ps1', 'apc.cmd', 'apc.exe') |
+  ForEach-Object { Get-Command $_ -ErrorAction SilentlyContinue } |
+  Select-Object -First 1
+if ($null -eq $apc) {
+  Write-Error 'error: apc is not on the PATH used by Git; install it or add its bin directory to PATH'
+  exit 1
+}
+
+& $apc.Source check $repoRoot
+exit $LASTEXITCODE
+EOF
+        exit 0
+        ;;
+      *)
+        printf 'error: unsupported hook shell: %s (choose sh or powershell)\n' "$hook_shell" >&2
+        usage >&2
+        exit 2
+        ;;
+    esac
+    if [ "$#" -ne 0 ] && [ "$#" -ne 2 ]; then
+      printf 'error: hook accepts only --shell sh|powershell\n' >&2
       usage >&2
       exit 2
     fi

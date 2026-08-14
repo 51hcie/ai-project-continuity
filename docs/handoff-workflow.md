@@ -59,11 +59,17 @@ When continuity files conflict, do not resolve them with a blanket “ours” or
 
 After merge, the target branch should record the actual integrated result. Remove feature-only next steps that are complete, keep unresolved work explicit, and record validation from the merged state rather than copying a pre-merge claim.
 
+## Coordinate concurrent agents on one branch
+
+Separate branches are the safest default. If two agents must share a branch, use the optional `## Active claims` table in `.ai/tasks.md` to announce ownership and scope. Before writing, capture `git hash-object .ai/tasks.md`; re-check it immediately before the write and re-read and merge if it changed. Never treat a claim as a filesystem lock, and release or mark it stale when the work stops.
+
 ## Optional automation
 
 Use `apc check --staleness 20` to emit a non-blocking warning when `.ai/tasks.md` has not changed in more than 20 commits. This is a review prompt, not proof that the handoff is wrong; repositories vary in commit size and update cadence. The warning is skipped outside a Git repository.
 
 `apc hook` prints a small pre-commit hook to standard output. It never writes under `.git/hooks/`, because silently replacing or appending to an existing hook can break a project's workflow. Review the output and compose it with the repository's existing hook manager or hook only when local policy calls for commit-time validation.
+
+On Windows, Git for Windows runs the default POSIX hook through its bundled shell; ensure the `apc` command is on the PATH seen by Git. Native PowerShell users can run `apc hook --shell powershell > .git/hooks/pre-commit.ps1`, then invoke that file from the repository's normal `pre-commit` shim. The generated PowerShell hook also checks for `apc`, `apc.ps1`, `apc.cmd`, or `apc.exe` and fails closed with a PATH instruction when none is available.
 
 ## Recover non-public resources safely
 

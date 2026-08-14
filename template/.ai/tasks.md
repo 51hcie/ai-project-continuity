@@ -7,6 +7,13 @@
 <!-- Example: Add status filtering in `internal/trails/query.go` (API maintainer; started <date>). -->
 - [ ] Highest-priority active task (owner; start date)
 
+## Active claims
+
+<!-- Optional coordination hint when multiple agents share one branch. A claim is not a lock. -->
+| Claim | Owner/role | Started | Scope | Status |
+| --- | --- | --- | --- | --- |
+| <task slug> | <name or role> | YYYY-MM-DD | <files or area> | active |
+
 ## Next
 
 - [ ] Next executable task

@@ -22,7 +22,7 @@ your-project/
 ├── .ai/
 │   ├── context.md         # 目标、边界、约束和运行命令
 │   ├── decisions.md       # 长期有效的架构决策
-│   ├── tasks.md           # 当前任务、阻塞项、验证证据和下一入口
+│   ├── tasks.md           # 当前任务、可选认领表、验证证据和下一入口
 │   ├── prompts/           # 可复用的项目提示词，不保存私人对话
 │   ├── resources.md      # 可选的非公开资源安全定位，不保存资源值
 │   └── sessions/          # 简短里程碑交接
@@ -77,9 +77,11 @@ sh scripts/test.sh
 
 ```sh
 apc check --staleness 20 ../my-project
+apc check --staleness 3d ../my-project
+apc check --staleness 1w ../my-project
 ```
 
-该提示不会导致检查失败，并且只在 Git 仓库内生效。
+纯数字按 `.ai/tasks.md` 最近一次提交之后的 commit 数判断；带 `d` 或 `w` 后缀时按经过的天数或周数判断。该提示不会导致检查失败，并且使用 Git 时间戳作为依据。
 
 如需把核心交接上下文粘贴到网页 LLM 或交给其他人：
 
@@ -88,6 +90,8 @@ apc bundle ../my-project > handoff.md
 ```
 
 `bundle` 会先要求项目通过 `apc check`，再按固定顺序输出 `AGENTS.md`、`.ai/context.md`、`.ai/decisions.md` 和 `.ai/tasks.md`；默认不会包含环境文件、prompts、session notes、resources 或私有文件。只有确认安全定位信息适合分享时才加 `--resources`。自动检查无法识别所有敏感事实，分享前仍须人工阅读 `handoff.md`。
+
+如果上下文窗口较小，可使用 `apc bundle --minimal ../my-project`。它只输出持久约束、当前和下一任务、阻塞项、交接证据以及最新的 session 摘要；决策历史、prompts 和 resources 默认不会进入这个精简包。`--resources` 仍然是显式 opt-in，并会给出复核提示。
 
 GitHub Actions 可固定使用已发布版本：
 
@@ -100,6 +104,8 @@ steps:
 ```
 
 本地提交前检查可用 `apc hook` 生成一段可审查的 hook 脚本；该命令不会擅自修改 `.git/hooks/`，以免覆盖项目已有流程。
+
+Windows 的 Git for Windows 可以使用默认的 `sh` hook，但必须保证 Git 看到的 PATH 中有 `apc`。如果使用原生 PowerShell，可运行 `apc hook --shell powershell` 生成 `.ps1` 文件，再从仓库现有的 `pre-commit` shim 调用它；生成的脚本会检查 `apc`、`apc.ps1`、`apc.cmd` 或 `apc.exe`，找不到时会明确提示 PATH 问题。
 
 ## 核心原则
 

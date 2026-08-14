@@ -80,21 +80,74 @@ if [ "$failed" -ne 0 ]; then
 fi
 
 if [ -n "$staleness_threshold" ]; then
+  staleness_unit=commits
   case $staleness_threshold in
-    *[!0-9]*|0)
-      printf 'error: APC_STALENESS_THRESHOLD must be a positive integer\n' >&2
+    *d)
+      staleness_unit=days
+      staleness_number=${staleness_threshold%d}
+      ;;
+    *w)
+      staleness_unit=weeks
+      staleness_number=${staleness_threshold%w}
+      ;;
+    *)
+      staleness_number=$staleness_threshold
+      ;;
+  esac
+  case $staleness_number in
+    ''|*[!0-9]*|0)
+      printf 'error: APC_STALENESS_THRESHOLD must be a positive commit count, days (e.g. 3d), or weeks (e.g. 1w)\n' >&2
       exit 2
       ;;
   esac
 
-  if git -C "$target" rev-parse --verify HEAD >/dev/null 2>&1; then
-    tasks_revision=$(git -C "$target" log -1 --format=%H -- .ai/tasks.md 2>/dev/null || true)
-    if [ -n "$tasks_revision" ]; then
-      commits_since_tasks=$(git -C "$target" rev-list --count "$tasks_revision..HEAD")
-      if [ "$commits_since_tasks" -gt "$staleness_threshold" ]; then
-        printf 'warning: .ai/tasks.md has not changed in %s commits (threshold: %s); review whether the handoff is stale\n' \
-          "$commits_since_tasks" "$staleness_threshold" >&2
+  if [ "$staleness_unit" = commits ]; then
+    if git -C "$target" rev-parse --verify HEAD >/dev/null 2>&1; then
+      tasks_revision=$(git -C "$target" log -1 --format=%H -- .ai/tasks.md 2>/dev/null || true)
+      if [ -n "$tasks_revision" ]; then
+        commits_since_tasks=$(git -C "$target" rev-list --count "$tasks_revision..HEAD")
+        if [ "$commits_since_tasks" -gt "$staleness_number" ]; then
+          printf 'warning: .ai/tasks.md has not changed in %s commits (threshold: %s); review whether the handoff is stale\n' \
+            "$commits_since_tasks" "$staleness_number" >&2
+        fi
       fi
+    fi
+  else
+    latest_tasks_change=
+    if git -C "$target" rev-parse --verify HEAD >/dev/null 2>&1; then
+      latest_tasks_change=$(git -C "$target" log -1 --format=%ct -- .ai/tasks.md 2>/dev/null || true)
+    fi
+
+    if [ -z "$latest_tasks_change" ] && [ -f "$target/.ai/tasks.md" ]; then
+      latest_tasks_change=$(stat -c %Y "$target/.ai/tasks.md" 2>/dev/null || true)
+      case $latest_tasks_change in
+        ''|*[!0-9]*)
+          latest_tasks_change=$(stat -f %m "$target/.ai/tasks.md" 2>/dev/null || true)
+          ;;
+      esac
+    fi
+
+    case $latest_tasks_change in
+      ''|*[!0-9]*) latest_tasks_change=0 ;;
+    esac
+
+    now=$(date +%s)
+    age=$((now - latest_tasks_change))
+    if [ "$age" -lt 0 ]; then
+      age=0
+    fi
+    if [ "$staleness_unit" = days ]; then
+      threshold_seconds=$((staleness_number * 86400))
+      threshold_label=${staleness_number}d
+      age_label=days
+    else
+      threshold_seconds=$((staleness_number * 604800))
+      threshold_label=${staleness_number}w
+      age_label=weeks
+    fi
+    if [ "$latest_tasks_change" -gt 0 ] && [ "$age" -gt "$threshold_seconds" ]; then
+      printf 'warning: .ai/tasks.md has not changed in %s (threshold: %s); review whether the handoff is stale\n' \
+        "$age_label" "$threshold_label" >&2
     fi
   fi
 fi

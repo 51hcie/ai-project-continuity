@@ -4,6 +4,17 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+### Added
+
+- `apc bundle --minimal` for token-constrained handoffs, including current task state and the latest session summary.
+- `d` and `w` suffixes for time-based `apc check --staleness` warnings.
+- `apc hook --shell powershell` plus Windows PATH guidance for native PowerShell repositories.
+- An optional active-claims convention for coordinating concurrent agents that share a branch.
+
+### Changed
+
+- Concurrent task updates now document optimistic file-identity checks and explicit merge-on-change behavior instead of silent last-writer-wins edits.
+
 ## [0.5.0] - 2026-08-14
 
 ### Added
