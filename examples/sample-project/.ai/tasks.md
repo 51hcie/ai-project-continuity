@@ -4,6 +4,10 @@
 
 - [ ] Implement `GET /trails` with two synthetic records (primary maintainer; started 2026-08-12).
 
+## Active claims
+
+No shared-branch claims are active.
+
 ## Next
 
 - [ ] Add unit tests for status filtering and unknown query values.
