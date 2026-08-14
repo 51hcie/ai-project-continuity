@@ -31,6 +31,13 @@
 - Define locator-only metadata for re-obtaining non-public inputs after a handoff.
 - Keep resource metadata opt-in for bundles and prohibit secret or transcript recovery from Git.
 
+## v0.6 — bounded and cross-platform handoffs
+
+- Provide a minimal context bundle for token-constrained agents.
+- Add time-based staleness warnings alongside commit-count heuristics.
+- Document optimistic coordination for concurrent task updates.
+- Generate a reviewable PowerShell hook for Windows users.
+
 ## Next
 
 - Gather feedback from repositories using the protocol.
