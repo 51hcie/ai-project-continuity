@@ -24,6 +24,7 @@ your-project/
 │   ├── decisions.md       # durable architecture decision records
 │   ├── tasks.md           # current work, blockers, evidence, and next entry point
 │   ├── prompts/           # reusable project prompts, never private transcripts
+│   ├── resources.md       # optional safe locators for non-public inputs, never values
 │   └── sessions/          # concise milestone handoffs
 ├── .env.example           # safe configuration contract
 └── .gitignore             # local state and secrets remain local
@@ -101,7 +102,7 @@ The warning is non-blocking and only applies inside a Git repository.
 apc bundle ../my-project > handoff.md
 ```
 
-`bundle` first requires the project to pass `apc check`, then writes `AGENTS.md`, `.ai/context.md`, `.ai/decisions.md`, and `.ai/tasks.md` in deterministic order. It never copies environment files, prompts, session notes, or private files. Automated checks cannot recognize every sensitive fact, so read `handoff.md` before pasting it into a web LLM or sharing it with another person.
+`bundle` first requires the project to pass `apc check`, then writes `AGENTS.md`, `.ai/context.md`, `.ai/decisions.md`, and `.ai/tasks.md` in deterministic order. It never copies environment files, prompts, session notes, resources, or private files by default. Add `--resources` only when safe locator metadata is appropriate to share. Automated checks cannot recognize every sensitive fact, so read `handoff.md` before pasting it into a web LLM or sharing it with another person.
 
 ### GitHub Actions
 
@@ -110,7 +111,7 @@ Pin a released version in your workflow:
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: 51hcie/ai-project-continuity@v0.4.0
+  - uses: 51hcie/ai-project-continuity@v0.5.0
     with:
       target: .
 ```
@@ -155,7 +156,7 @@ See the normative [protocol definition](docs/protocol.md) and practical [handoff
 
 ## Project status
 
-The protocol is intentionally small and the tooling is currently at `v0.4`. External adoption is not claimed without public evidence. See [ADOPTERS.md](ADOPTERS.md), [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+The protocol is intentionally small and the tooling is currently at `v0.5`. External adoption is not claimed without public evidence. See [ADOPTERS.md](ADOPTERS.md), [CHANGELOG.md](CHANGELOG.md), the [roadmap](docs/roadmap.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security and privacy
 

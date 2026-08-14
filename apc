@@ -2,7 +2,7 @@
 
 set -eu
 
-version=0.4.0
+version=0.5.0
 
 usage() {
   cat <<'EOF'
@@ -13,7 +13,8 @@ Commands:
   check [--staleness COMMITS] [TARGET]
                     Validate a project; optionally warn about stale task state
   report [TARGET]   Print a privacy-safe Markdown conformance report
-  bundle [TARGET]   Print core continuity context for a manual handoff
+  bundle [--resources] [TARGET]
+                    Print core continuity context for a manual handoff
   hook              Print a reviewable pre-commit hook without installing it
   version           Print the installed version
   help              Show this help
@@ -125,6 +126,11 @@ case $command_name in
 EOF
     ;;
   bundle)
+    include_resources=
+    if [ "${1:-}" = "--resources" ]; then
+      include_resources=1
+      shift
+    fi
     if [ "$#" -gt 1 ]; then
       printf 'error: bundle accepts at most one target directory\n' >&2
       usage >&2
@@ -147,6 +153,12 @@ EOF
       cat "$target/$path"
       printf '\n\n'
     done
+    if [ -n "$include_resources" ] && [ -f "$target/.ai/resources.md" ]; then
+      printf '## `.ai/resources.md`\n\n'
+      cat "$target/.ai/resources.md"
+      printf '\n\n'
+      printf 'warning: resource locators may reveal internal names; review this section before sharing\n' >&2
+    fi
     ;;
   hook)
     if [ "$#" -ne 0 ]; then
