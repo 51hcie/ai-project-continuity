@@ -151,6 +151,54 @@ if "$tmp/prefix/bin/apc" check --staleness 0 "$tmp/stale-project" >/dev/null 2>&
   exit 1
 fi
 
+cp -R "$root/examples/sample-project" "$tmp/decision-warning-project"
+sed '/^## Active decision index$/d; /^- Status: proposed$/d' \
+  "$tmp/decision-warning-project/.ai/decisions.md" > "$tmp/decisions-without-status.md"
+mv "$tmp/decisions-without-status.md" "$tmp/decision-warning-project/.ai/decisions.md"
+sh "$script_dir/check.sh" "$tmp/decision-warning-project" \
+  > "$tmp/decision-warning-output.txt" 2> "$tmp/decision-warning.txt"
+if ! grep -q 'warning: .ai/decisions.md has no active decision index' "$tmp/decision-warning.txt" || \
+   ! grep -q 'warning: decision records missing a Status field' "$tmp/decision-warning.txt"; then
+  printf 'test failed: malformed decision records did not emit structural warnings\n' >&2
+  exit 1
+fi
+if ! grep -q '^continuity check passed:' "$tmp/decision-warning-output.txt"; then
+  printf 'test failed: a decision structure warning incorrectly failed validation\n' >&2
+  exit 1
+fi
+
+cp -R "$root/examples/sample-project" "$tmp/inactive-index-project"
+awk '
+  !changed && $0 == "- Status: accepted" { print "- Status: superseded"; changed=1; next }
+  { print }
+' "$tmp/inactive-index-project/.ai/decisions.md" > "$tmp/inactive-index-decisions.md"
+mv "$tmp/inactive-index-decisions.md" "$tmp/inactive-index-project/.ai/decisions.md"
+sh "$script_dir/check.sh" "$tmp/inactive-index-project" \
+  > "$tmp/inactive-index-output.txt" 2> "$tmp/inactive-index-warning.txt"
+if ! grep -q 'warning: active decision index contains records that are not accepted' "$tmp/inactive-index-warning.txt" || \
+   ! grep -q 'ADR-001 (superseded)' "$tmp/inactive-index-warning.txt"; then
+  printf 'test failed: a superseded active decision did not emit a warning\n' >&2
+  exit 1
+fi
+
+cp -R "$root/examples/sample-project" "$tmp/prompt-warning-project"
+printf '%s\n' \
+  '# Summarize release' \
+  '' \
+  'Summarize the current release.' \
+  > "$tmp/prompt-warning-project/.ai/prompts/summarize-release.md"
+sh "$script_dir/check.sh" "$tmp/prompt-warning-project" \
+  > "$tmp/prompt-warning-output.txt" 2> "$tmp/prompt-warning.txt"
+if ! grep -q 'warning: .ai/prompts/README.md does not reference summarize-release.md' "$tmp/prompt-warning.txt" || \
+   ! grep -q 'warning: .*summarize-release.md is missing a situation, inputs, or expected output heading' "$tmp/prompt-warning.txt"; then
+  printf 'test failed: an undiscoverable malformed prompt did not emit structural warnings\n' >&2
+  exit 1
+fi
+if ! grep -q '^continuity check passed:' "$tmp/prompt-warning-output.txt"; then
+  printf 'test failed: a prompt structure warning incorrectly failed validation\n' >&2
+  exit 1
+fi
+
 if ! grep -q '^  using: composite$' "$root/action.yml" || \
    ! grep -Fq 'APC_TARGET: ${{ inputs.target }}' "$root/action.yml" || \
    ! grep -Fq 'sh "$GITHUB_ACTION_PATH/scripts/check.sh" "$APC_TARGET"' "$root/action.yml"; then

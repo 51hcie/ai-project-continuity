@@ -4,6 +4,10 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+### Added
+
+- Non-blocking `apc check` warnings for decision records without status, non-accepted records in the active index, incomplete prompt metadata, and prompts missing from the prompt index.
+
 ## [0.5.0] - 2026-08-14
 
 ### Added
