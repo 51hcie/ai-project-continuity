@@ -11,6 +11,10 @@ say_error() {
   failed=1
 }
 
+say_warning() {
+  printf 'warning: %b\n' "$1" >&2
+}
+
 if [ ! -d "$target" ]; then
   printf 'error: target is not a directory: %s\n' "$target" >&2
   exit 2
@@ -62,6 +66,82 @@ if [ -n "$docs" ]; then
   if [ -n "$secret_content" ]; then
     say_error "secret-shaped content found:\n$secret_content"
   fi
+fi
+
+decisions_file=$target/.ai/decisions.md
+if [ -f "$decisions_file" ]; then
+  if ! grep -Eiq '^##[[:space:]]+Active([[:space:]]+decision)?[[:space:]]+(index|decisions?)[[:space:]]*$' "$decisions_file"; then
+    say_warning '.ai/decisions.md has no active decision index; separate current constraints from historical records'
+  fi
+
+  missing_decision_status=$(awk '
+    /^##[[:space:]]+ADR-[0-9]+:/ {
+      if (in_record && !has_status) print record
+      record=$0
+      in_record=1
+      has_status=0
+      next
+    }
+    in_record && /^-[[:space:]]*Status:[[:space:]]*/ { has_status=1 }
+    END { if (in_record && !has_status) print record }
+  ' "$decisions_file")
+  if [ -n "$missing_decision_status" ]; then
+    say_warning "decision records missing a Status field:\n$missing_decision_status"
+  fi
+
+  inactive_index_entries=$(awk '
+    BEGIN { in_active=0; current="" }
+    /^##[[:space:]]+Active([[:space:]]+decision)?[[:space:]]+(index|decisions?)[[:space:]]*$/ {
+      in_active=1
+      next
+    }
+    in_active && /^##[[:space:]]+/ { in_active=0 }
+    in_active && /^[[:space:]]*-[[:space:]]/ && match($0, /ADR-[0-9]+/) {
+      active[substr($0, RSTART, RLENGTH)]=1
+    }
+    /^##[[:space:]]+ADR-[0-9]+:/ {
+      match($0, /ADR-[0-9]+/)
+      current=substr($0, RSTART, RLENGTH)
+      next
+    }
+    current != "" && /^-[[:space:]]*Status:[[:space:]]*/ {
+      value=$0
+      sub(/^-[[:space:]]*Status:[[:space:]]*/, "", value)
+      status[current]=tolower(value)
+    }
+    END {
+      for (id in active) {
+        if (status[id] != "" && status[id] != "accepted") print id " (" status[id] ")"
+      }
+    }
+  ' "$decisions_file")
+  if [ -n "$inactive_index_entries" ]; then
+    say_warning "active decision index contains records that are not accepted:\n$inactive_index_entries"
+  fi
+fi
+
+prompts_dir=$target/.ai/prompts
+prompts_index=$prompts_dir/README.md
+if [ -f "$prompts_index" ]; then
+  if ! grep -Eiq '(When to use|Situation)' "$prompts_index" || \
+     ! grep -Eiq 'Inputs?' "$prompts_index" || \
+     ! grep -Eiq 'Expected output' "$prompts_index"; then
+    say_warning '.ai/prompts/README.md does not index prompts by situation, inputs, and expected output'
+  fi
+
+  find "$prompts_dir" -type f -name '*.md' \
+    ! -name 'README.md' ! -name '_template.md' -print | while IFS= read -r prompt_file
+  do
+    prompt_name=$(basename "$prompt_file")
+    if ! grep -Fq "$prompt_name" "$prompts_index"; then
+      say_warning ".ai/prompts/README.md does not reference $prompt_name"
+    fi
+    if ! grep -Eiq '^##[[:space:]]+(When to use|Situation)[[:space:]]*$' "$prompt_file" || \
+       ! grep -Eiq '^##[[:space:]]+Inputs?[[:space:]]*$' "$prompt_file" || \
+       ! grep -Eiq '^##[[:space:]]+Expected output[[:space:]]*$' "$prompt_file"; then
+      say_warning "$prompt_file is missing a situation, inputs, or expected output heading"
+    fi
+  done
 fi
 
 if git -C "$target" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
